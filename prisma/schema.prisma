@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id // Supabase Auth UUID
+  wid           Int       @unique @default(autoincrement())
+  name          String?
+  email         String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  categories    Category[]
+  expenses      Expense[]
+}
+
+model Category {
+  id             String   @id @default(uuid())
+  name           String
+  icon           String
+  color          String
+  monthlyBudget  Float    @default(0)
+  wid            Int
+  user           User     @relation(fields: [wid], references: [wid])
+  expenses       Expense[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([wid])
+}
+
+model Expense {
+  id            String    @id @default(uuid())
+  amount        Float
+  merchant      String
+  paymentMode   String
+  note          String?
+  date          DateTime  @default(now())
+  wid           Int
+  categoryId    String
+  user          User      @relation(fields: [wid], references: [wid])
+  category      Category  @relation(fields: [categoryId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([wid])
+  @@index([categoryId])
+}
